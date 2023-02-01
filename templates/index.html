@@ -29,7 +29,7 @@
 		<div class="MessageBox">
 			<h3>Create a Note</h3>
 			<form action="/create" method="post">
-				<textarea name="message" placeholder="Message" oninput="countLetters()"></textarea>
+				<textarea minlength="5" required name="message" placeholder="Message" oninput="countLetters()"></textarea>
 				<p>Total Characters : <span class="count">0</span></p>
 
 				<p><label for="password">Password (optional):</label>&nbsp;<input type="password" id="password" name="password"></p>
