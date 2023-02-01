@@ -1,17 +1,55 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>Privnote</title>
-  </head>
-  <body>
-    <h1>Create a Message</h1>
-        <form action="/create" method="post">
-            <textarea name="message"></textarea>
-            <br>
-            <label for="password">Password (optional):</label>
-            <input type="password" id="password" name="password">
-            <br><br>
-            <input type="submit" value="Create Message">
-        </form>
-  </body>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>Simple-Selfdestruction-Notes</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bitter.css') }}">
+	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/messagebox.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/header.css') }}">
+	<!--
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}">
+	-->
+</head>
+
+<body>
+    <header class="header-dark">
+        <nav class="navbar navbar-dark navbar-expand-lg navigation-clean-search">
+            <div class="container"><a class="navbar-brand" href="#">Simple-Selfdestrution-Notes</a></div>
+        </nav>
+        <div class="container hero">
+            <div class="row">
+                <div class="col-md-8 offset-md-2">
+                    <h1 class="text-center">Simple and Secure notes</h1>
+                </div>
+            </div>
+        </div>
+		<div class="MessageBox">
+			<h3>Create a Note</h3>
+			<form action="/create" method="post">
+				<textarea name="message" placeholder="Message" oninput="countLetters()"></textarea>
+				<p>Total Characters : <span class="count">0</span></p>
+
+				<p><label for="password">Password (optional):</label>&nbsp;<input type="password" id="password" name="password"></p>
+
+				<p><input type="submit" value="Create Message"></p>
+			</form>
+		</div>
+<script>
+  const textarea = document.querySelector('textarea');
+  const count = document.querySelector('.count');
+
+  function countLetters() {
+    const text = textarea.value;
+    const textLength = textarea.value.length;
+    count.innerText = textLength;
+  }
+</script>
+
+    </header>
+	<script type="text/javascript" src="{{ url_for('static', filename='bootstrap/js/bootstrap.min.js') }}"></script>
+</body>
+
 </html>

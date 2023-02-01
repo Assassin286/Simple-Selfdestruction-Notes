@@ -9,7 +9,7 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.fernet import Fernet
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static')
 
 @app.route("/")
 def index():
