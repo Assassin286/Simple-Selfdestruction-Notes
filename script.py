@@ -25,10 +25,10 @@ def create():
     encrypted_with_password = False
     salt = None
     if password:
-        salt = os.urandom(16)
+        salt = os.urandom(32)
         kdf = PBKDF2HMAC(
-            algorithm=hashes.SHA256,
-            length=32,
+            algorithm=hashes.SHA512,
+            length=64,
             salt=salt,
             iterations=100000,
             backend=default_backend()
@@ -72,8 +72,8 @@ def show_message(message_id):
             return render_template("password.html", message_id=message_id)
         salt = base64.b64decode(salt.encode())
         kdf = PBKDF2HMAC(
-            algorithm=hashes.SHA256,
-            length=32,
+            algorithm=hashes.SHA512,
+            length=64,
             salt=salt,
             iterations=100000,
             backend=default_backend()
