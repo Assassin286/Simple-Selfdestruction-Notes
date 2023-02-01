@@ -3,6 +3,7 @@ import os
 import uuid
 import base64
 import sqlite3
+import secrets
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
@@ -25,10 +26,10 @@ def create():
     encrypted_with_password = False
     salt = None
     if password:
-        salt = os.urandom(32)
+        salt = secrets.token_bytes(16)
         kdf = PBKDF2HMAC(
             algorithm=hashes.SHA512,
-            length=64,
+            length=32,
             salt=salt,
             iterations=100000,
             backend=default_backend()
@@ -73,7 +74,7 @@ def show_message(message_id):
         salt = base64.b64decode(salt.encode())
         kdf = PBKDF2HMAC(
             algorithm=hashes.SHA512,
-            length=64,
+            length=32,
             salt=salt,
             iterations=100000,
             backend=default_backend()
