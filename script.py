@@ -21,6 +21,9 @@ def create():
         return "Nachricht nicht gefunden", 400
     message = message.encode()
     password = request.form.get("password")
+    encrypted = message
+    encrypted_with_password = False
+    salt = None
     if password:
         salt = os.urandom(16)
         kdf = PBKDF2HMAC(
@@ -33,15 +36,14 @@ def create():
         key = base64.urlsafe_b64encode(kdf.derive(password.encode()))
         fernet = Fernet(key)
         encrypted = fernet.encrypt(message)
-    else:
-        encrypted = message
+        encrypted_with_password = True
     encoded = base64.urlsafe_b64encode(encrypted).decode()
 
     conn = sqlite3.connect('messages.db')
     c = conn.cursor()
-    c.execute('''CREATE TABLE IF NOT EXISTS messages (id text, message text)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS messages (id text, message text, encrypted_with_password boolean, salt text)''')
     message_id = str(uuid.uuid4())
-    c.execute("INSERT INTO messages VALUES (?, ?)", (message_id, encoded))
+    c.execute("INSERT INTO messages VALUES (?, ?, ?, ?)", (message_id, encoded, encrypted_with_password, base64.b64encode(salt).decode() if salt else None))
     conn.commit()
     conn.close()
 
@@ -57,15 +59,18 @@ def show_link(message_id):
 def show_message(message_id):
     conn = sqlite3.connect('messages.db')
     c = conn.cursor()
-    c.execute("SELECT message FROM messages WHERE id=?", (message_id,))
-    result = c.fetchone()
-    if not result:
+    c.execute("SELECT message, encrypted_with_password, salt FROM messages WHERE id=?", (message_id,))
+    message = c.fetchone()
+    if not message:
         return "Nachricht nicht gefunden", 404
-    encoded = result[0]
-    encrypted = base64.urlsafe_b64decode(encoded.encode())
+    encoded, encrypted_with_password, salt = message
+    decoded = base64.urlsafe_b64decode(encoded.encode())
     password = request.form.get("password")
-    if password:
-        salt = os.urandom(16)
+    decrypted = decoded
+    if encrypted_with_password:
+        if not password:
+            return render_template("password.html", message_id=message_id)
+        salt = base64.b64decode(salt.encode())
         kdf = PBKDF2HMAC(
             algorithm=hashes.SHA256,
             length=32,
@@ -75,19 +80,12 @@ def show_message(message_id):
         )
         key = base64.urlsafe_b64encode(kdf.derive(password.encode()))
         fernet = Fernet(key)
-        try:
-            decrypted = fernet.decrypt(encrypted)
-        except Exception:
-            return "Ungültiges Passwort", 400
-    else:
-        decrypted = encrypted
-    message = decrypted.decode()
-
-    c.execute("DELETE FROM messages WHERE id=?", (message_id,))
+        decrypted = fernet.decrypt(decoded)
+    conn.execute("DELETE FROM messages WHERE id=?", (message_id,))
     conn.commit()
     conn.close()
+    return render_template("show_message.html", message=decrypted.decode())
 
-    return render_template("show_message.html", message=message)
 
 if __name__ == "__main__":
     app.run(debug=True)
