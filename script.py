@@ -4,6 +4,9 @@ import uuid
 import base64
 import sqlite3
 import secrets
+import json
+import requests
+import configparser
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
@@ -11,17 +14,40 @@ from cryptography.fernet import Fernet
 
 app = Flask(__name__, static_folder='static')
 
+config = configparser.ConfigParser()
+config.read("config.ini")
+recaptcha_enabled = config.getboolean("recaptcha", "enabled")
+website_key = config["recaptcha"]["website_key"]
+recaptcha_secret = config.get("recaptcha", "secret")
+
+def verify_recaptcha(token):
+    if not recaptcha_enabled:
+        return True
+    response = requests.post(
+        "https://www.google.com/recaptcha/api/siteverify",
+        data={
+            "secret": recaptcha_secret,
+            "response": token
+        }
+    )
+    result = response.json()
+    return result.get("success", False)
+  
 @app.route("/")
 def index():
-    return render_template("index.html")
+    recaptcha_enabled = config["recaptcha"].getboolean("enabled")
+    return render_template("index.html", website_key=website_key, recaptcha_enabled=recaptcha_enabled)
 
 @app.route('/create', methods=['GET', 'POST'])
 def create():
     message = request.form.get("message")
     if not message:
-        return "Nachricht nicht gefunden", 400
+        return "Message not found", 400    
     message = message.encode()
     password = request.form.get("password")
+    if os.environ.get('RECAPTCHA_ENABLED') == 'True':
+        if not recaptcha_token or not verify_recaptcha(recaptcha_token):
+            return "Invalid reCAPTCHA-Token", 400
     encrypted = message
     encrypted_with_password = False
     salt = None
@@ -63,7 +89,7 @@ def show_message(message_id):
     c.execute("SELECT message, encrypted_with_password, salt FROM messages WHERE id=?", (message_id,))
     message = c.fetchone()
     if not message:
-        return "Nachricht nicht gefunden", 404
+        return "Message not found", 404
     encoded, encrypted_with_password, salt = message
     decoded = base64.urlsafe_b64decode(encoded.encode())
     password = request.form.get("password")

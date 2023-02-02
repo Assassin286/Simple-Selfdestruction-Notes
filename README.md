@@ -20,7 +20,7 @@
 
 ## About The Project
 
-This is a Python script that implements a web application using the Flask framework. The web application allows a user to create, access and delete encrypted messages.
+This is a Python script that implements a web application using the Flask framework. The web application allows a user to create, access and delete encrypted messages. Recaptcha is optional but build in with config file.
 
 ## Built With
 
@@ -36,6 +36,10 @@ This code is built using the Flask micro-framework for Python. Flask is a lightw
 
 *sqlite3 (a Python library for working with SQLite databases)
 
+*configparser (a Python library for fetching config files)
+
 ## Usage
 
 Simply execute the script.py
+
+Recaptcha is disabled by default, to activate it change the content of config.ini

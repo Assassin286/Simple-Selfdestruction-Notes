@@ -9,6 +9,10 @@
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bitter.css') }}">
 	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/messagebox.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/header.css') }}">
+	{% if recaptcha_enabled %}
+	<script src="https://www.google.com/recaptcha/api.js?render={{ website_key }}"></script>
+	{% endif %}
+
 	<!--
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}">
 	-->
@@ -17,7 +21,7 @@
 <body>
     <header class="header-dark">
         <nav class="navbar navbar-dark navbar-expand-lg navigation-clean-search">
-            <div class="container"><a class="navbar-brand" href="#">Simple-Selfdestrution-Notes</a></div>
+            <div class="container"><a class="navbar-brand" href="/">Simple-Selfdestrution-Notes</a></div>
         </nav>
         <div class="container hero">
             <div class="row">
@@ -35,6 +39,9 @@
 				<p><label for="password">Password (optional):</label>&nbsp;<input type="password" id="password" name="password"></p>
 
 				<p><input type="submit" value="Create Message"></p>
+				{% if recaptcha_enabled %}
+				<input type="hidden" name="recaptcha_token" id="recaptcha_token">
+				{% endif %}
 			</form>
 		</div>
 <script>
@@ -49,6 +56,15 @@
 </script>
 
     </header>
+	{% if recaptcha_enabled %}
+	<script>
+    grecaptcha.ready(function() {
+        grecaptcha.execute('{{ website_key }}', {action: 'create'}).then(function(token) {
+            document.getElementById('recaptcha_token').value = token;
+        });
+    });
+	</script>
+	{% endif %}
 	<script type="text/javascript" src="{{ url_for('static', filename='bootstrap/js/bootstrap.min.js') }}"></script>
 </body>
 
